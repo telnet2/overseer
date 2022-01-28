@@ -13,6 +13,7 @@ import (
 	"time"
 
 	ml "github.com/ShinyTrinkets/meta-logger"
+	"github.com/docker/docker/pkg/pubsub"
 )
 
 // Tick time unit, used when scanning the procs to see if they're alive.
@@ -34,7 +35,7 @@ type Overseer struct {
 	watchers   []chan *ProcessJSON
 	loggers    []chan *LogMsg
 	state      OvrState
-	stateEvent chan string
+	stateEvent *pubsub.Publisher
 }
 
 // ProcessJSON public structure
@@ -87,7 +88,7 @@ func NewOverseer() *Overseer {
 	ovr := &Overseer{
 		access:     &sync.RWMutex{},
 		stateLock:  &sync.RWMutex{},
-		stateEvent: make(chan string),
+		stateEvent: pubsub.NewPublisher(time.Millisecond*100, 0),
 	}
 
 	sigChannel := make(chan os.Signal, 2)
@@ -105,14 +106,15 @@ func NewOverseer() *Overseer {
 }
 
 // StateEvent returns the channel emitting state changes.
-func (or *Overseer) StateEvent() <-chan string {
-	return or.stateEvent
+func (or *Overseer) SubscribeStateEvent() <-chan interface{} {
+	return or.stateEvent.Subscribe()
 }
 
 // WaitIdle waits for the next IDLE state (finish all)
 func (or *Overseer) WaitIdle() {
-	for e := range or.stateEvent {
-		if e == IDLE_STATE {
+	stateEvent := or.SubscribeStateEvent()
+	for e := range stateEvent {
+		if e.(string) == IDLE_STATE {
 			return
 		}
 	}
@@ -582,5 +584,5 @@ func (ovr *Overseer) setState(state OvrState) {
 	ovr.stateLock.Lock()
 	defer ovr.stateLock.Unlock()
 	ovr.state = state
-	ovr.stateEvent <- state.String()
+	ovr.stateEvent.Publish(state.String())
 }
