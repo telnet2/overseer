@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	cmd "github.com/ShinyTrinkets/overseer"
+	cmd "github.com/telnet2/overseer"
 )
 
 func main() {

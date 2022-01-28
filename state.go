@@ -12,6 +12,15 @@ const (
 	// UNKNOWN ?
 )
 
+const (
+	IDLE_STATE     = "idle"
+	DONE_STATE     = "done"
+	FATAL_STATE    = "fatal"
+	RUNNING_STATE  = "running"
+	STOPPING_STATE = "stopping"
+	UNKNOWN_STATE  = "unknown"
+)
+
 // CmdState represents a Cmd state
 type CmdState uint8
 
@@ -42,14 +51,14 @@ type OvrState uint8
 func (p OvrState) String() string {
 	switch p {
 	case IDLE:
-		return "idle"
+		return IDLE_STATE
 	case RUNNING:
-		return "running"
+		return RUNNING_STATE
 	case STOPPING:
-		return "stopping"
+		return STOPPING_STATE
 	case FATAL:
-		return "fatal"
+		return FATAL_STATE
 	default:
-		return "unknown"
+		return UNKNOWN_STATE
 	}
 }

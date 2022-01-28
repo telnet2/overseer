@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  dev:
+    image: golang:bullseye
+    volumes:
+      - .:/app
+      - /tmp/go:/go
+    working_dir: /app
+    command: [ "/bin/bash" ]

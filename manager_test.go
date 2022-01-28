@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	cmd "github.com/ShinyTrinkets/overseer"
 	log "github.com/azer/logger"
 	"github.com/stretchr/testify/assert"
+	cmd "github.com/telnet2/overseer"
 )
 
 const timeUnit = 200 * time.Millisecond
@@ -278,6 +278,19 @@ func TestOverseerSuperviseAll(t *testing.T) {
 	pid2 := stat.PID
 
 	assert.NotEqual(pid1, pid2)
+}
+
+func TestOverseerAllDone(t *testing.T) {
+	ovr := cmd.NewOverseer()
+	opts := cmd.Options{Buffered: false, Streaming: false, DelayStart: 1}
+	ovr.Add("1", "sleep", []string{"5"}, opts)
+	ovr.Add("2", "sleep", []string{"3"}, opts)
+
+	go func() {
+		ovr.SuperviseAll()
+	}()
+
+	ovr.WaitIdle()
 }
 
 func TestOverseerSleep(t *testing.T) {

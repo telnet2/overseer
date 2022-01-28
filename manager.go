@@ -28,12 +28,13 @@ type (
 // Overseer structure.
 // For instantiating, it's best to use the NewOverseer() function.
 type Overseer struct {
-	access    *sync.RWMutex
-	stateLock *sync.RWMutex
-	procs     sync.Map // Will contain [string]*Cmd
-	watchers  []chan *ProcessJSON
-	loggers   []chan *LogMsg
-	state     OvrState
+	access     *sync.RWMutex
+	stateLock  *sync.RWMutex
+	procs      sync.Map // Will contain [string]*Cmd
+	watchers   []chan *ProcessJSON
+	loggers    []chan *LogMsg
+	state      OvrState
+	stateEvent chan string
 }
 
 // ProcessJSON public structure
@@ -84,8 +85,9 @@ func NewOverseer() *Overseer {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	ovr := &Overseer{
-		access:    &sync.RWMutex{},
-		stateLock: &sync.RWMutex{},
+		access:     &sync.RWMutex{},
+		stateLock:  &sync.RWMutex{},
+		stateEvent: make(chan string),
 	}
 
 	sigChannel := make(chan os.Signal, 2)
@@ -100,6 +102,20 @@ func NewOverseer() *Overseer {
 	}()
 
 	return ovr
+}
+
+// StateEvent returns the channel emitting state changes.
+func (or *Overseer) StateEvent() <-chan string {
+	return or.stateEvent
+}
+
+// WaitIdle waits for the next IDLE state (finish all)
+func (or *Overseer) WaitIdle() {
+	for e := range or.stateEvent {
+		if e == IDLE_STATE {
+			return
+		}
+	}
 }
 
 // ListAll returns the names of all the procs in alphabetic order.
@@ -130,6 +146,11 @@ func (ovr *Overseer) ListGroup(group string) []string {
 func (ovr *Overseer) HasProc(id string) bool {
 	_, exists := ovr.procs.Load(id)
 	return exists
+}
+
+func (ovr *Overseer) Cmd(id string) *Cmd {
+	cmd, _ := ovr.procs.Load(id)
+	return cmd.(*Cmd)
 }
 
 // Status returns a child process status, ready to be converted to JSON.
@@ -561,4 +582,5 @@ func (ovr *Overseer) setState(state OvrState) {
 	ovr.stateLock.Lock()
 	defer ovr.stateLock.Unlock()
 	ovr.state = state
+	ovr.stateEvent <- state.String()
 }

@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	cmd "github.com/ShinyTrinkets/overseer"
 	"github.com/go-test/deep"
 	"github.com/stretchr/testify/assert"
+	cmd "github.com/telnet2/overseer"
 )
 
 func TestCmdClone(t *testing.T) {
