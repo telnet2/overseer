@@ -24,7 +24,11 @@ type (
 	Attrs = ml.Attrs
 	// Logger is a type alias
 	Logger = ml.Logger
+	// Publisher is a type alias
+	Publisher = pubsub.Publisher
 )
+
+var NewPublisher = pubsub.NewPublisher
 
 // Overseer structure.
 // For instantiating, it's best to use the NewOverseer() function.
