@@ -1,4 +1,4 @@
-module github.com/ShinyTrinkets/overseer
+module github.com/telnet2/overseer
 
 require (
 	github.com/ShinyTrinkets/meta-logger v0.2.0
